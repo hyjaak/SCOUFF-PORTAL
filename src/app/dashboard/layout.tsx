@@ -9,6 +9,8 @@ import Sidebar from "@/components/Sidebar";
 import Topbar from "@/components/Topbar";
 import { redirect } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+
 // Render Guard utility
 async function safe<T>(asyncFn: () => Promise<T>, fallback: T): Promise<T> {
   try {
