@@ -1,0 +1,17 @@
+{
+  "root": true,
+  "extends": ["next", "next/core-web-vitals", "eslint:recommended"],
+  "rules": {
+    "no-restricted-syntax": [
+      "error",
+      {
+        "selector": "CallExpression[callee.name='require']",
+        "message": "Do not use require() in client/browser code. Use ES imports."
+      },
+      {
+        "selector": "MemberExpression[object.name='module']",
+        "message": "Do not use CommonJS module.exports in client/browser code. Use ES exports."
+      }
+    ]
+  }
+}
