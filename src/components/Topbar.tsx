@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react';
 import SmartBackButton from '@/components/SmartBackButton';
+import { roleLabel } from '@/lib/roles';
 
 export default function Topbar({ user }: { user: { email: string; role: string } }) {
   return (
@@ -12,7 +13,7 @@ export default function Topbar({ user }: { user: { email: string; role: string }
       </div>
       <div className="flex items-center gap-3">
         <span className="text-blue-300 font-semibold">{user.email}</span>
-        <span className="px-2 py-1 rounded bg-blue-800 text-xs text-blue-100 uppercase">{user.role}</span>
+        <span className="px-2 py-1 rounded bg-blue-800 text-xs text-blue-100 uppercase">{roleLabel(user.role)}</span>
       </div>
     </header>
   );

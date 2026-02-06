@@ -36,7 +36,7 @@ export async function setRoleFeaturePermissionAction(
 
 export async function setUserRoleAction(
   userId: string,
-  role: "ceo" | "manager" | "member"
+  role: "CEO" | "MANAGER" | "MEMBER"
 ): Promise<ActionResult<{ id: string; role: string }>> {
   const supabase = await createServerSupabaseClient();
   try {

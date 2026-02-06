@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import { roleLabel, normalizeRole } from "@/lib/roles";
 
 type Invite = {
   email: string;
@@ -19,7 +20,7 @@ function getErrorMessage(err: unknown, fallback: string) {
 export default function InvitesClient({ invites: initialInvites }: { invites: Invite[] }) {
   const [invites, setInvites] = useState(initialInvites);
   const [inviteEmail, setInviteEmail] = useState("");
-  const [role, setRole] = useState("member");
+  const [role, setRole] = useState("MEMBER");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -31,7 +32,7 @@ export default function InvitesClient({ invites: initialInvites }: { invites: In
       // TODO: call an API route or server action to create invite
       setInvites([{ email: inviteEmail, role, created_at: new Date().toISOString() }, ...invites]);
       setInviteEmail("");
-      setRole("member");
+      setRole("MEMBER");
     } catch (err: unknown) {
       setError(getErrorMessage(err, "Failed to create invite"));
     }
@@ -56,9 +57,9 @@ export default function InvitesClient({ invites: initialInvites }: { invites: In
           style={{ padding: 12, borderRadius: 8, border: "1px solid #1e3a8a", background: "#101a2b", color: "#fff", fontWeight: 500, fontSize: 16, flex: 2 }}
         />
         <select value={role} onChange={e => setRole(e.target.value)} style={{ padding: 12, borderRadius: 8, border: "1px solid #1e3a8a", background: "#101a2b", color: "#fff", fontWeight: 500, fontSize: 16, flex: 1 }}>
-          <option value="member">Member</option>
-          <option value="manager">Manager</option>
-          <option value="ceo">CEO</option>
+          <option value="MEMBER">Member</option>
+          <option value="MANAGER">Manager</option>
+          <option value="CEO">Super Admin</option>
         </select>
         <button type="submit" disabled={loading} style={{ background: "#38bdf8", color: "#fff", fontWeight: 700, border: "none", borderRadius: 8, padding: "12px 32px", fontSize: 18 }}>
           {loading ? "Creating..." : "Create Invite"}
@@ -73,7 +74,7 @@ export default function InvitesClient({ invites: initialInvites }: { invites: In
             <div key={inv.email} style={{ background: "#131c2e", borderRadius: 12, border: "1px solid #1e3a8a", padding: 24, color: "#fff", fontWeight: 500, display: "flex", alignItems: "center", gap: 24 }}>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 20, color: "#38bdf8", fontWeight: 700 }}>{inv.email}</div>
-                <div style={{ fontSize: 13, color: "#a3a3a3", marginTop: 4 }}>Role: {inv.role} | Created {inv.created_at ? new Date(inv.created_at).toLocaleString() : ""}</div>
+                <div style={{ fontSize: 13, color: "#a3a3a3", marginTop: 4 }}>Role: {roleLabel(normalizeRole(inv.role))} | Created {inv.created_at ? new Date(inv.created_at).toLocaleString() : ""}</div>
               </div>
               <button onClick={() => copyInvite(inv.email)} style={{ background: "#101a2b", color: "#38bdf8", border: "1px solid #38bdf8", borderRadius: 6, padding: "8px 18px", fontWeight: 700, fontSize: 15, marginRight: 8 }}>Copy Invite Link</button>
               <a href={`/invite/${inv.email}`} style={{ background: "#38bdf8", color: "#fff", borderRadius: 6, padding: "8px 18px", fontWeight: 700, fontSize: 15, textDecoration: "none", marginRight: 8 }}>Open</a>

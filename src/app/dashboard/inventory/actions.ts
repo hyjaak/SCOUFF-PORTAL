@@ -2,6 +2,7 @@
 
 import { createInventoryProduct, type InventoryProduct } from '@/lib/inventory';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { getActiveCompanyId } from '@/lib/company';
 
 type ActionResult<T> = { ok: true; data: T } | { ok: false; error: string };
 
@@ -50,7 +51,16 @@ export async function createInventoryProductAction(input: CreateInventoryProduct
   };
 
   try {
-    const created = await createInventoryProduct(payload);
+    const supabase = await createServerSupabaseClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { ok: false, error: "Unauthorized" };
+    const active = await getActiveCompanyId(supabase, user.id);
+    if (!active.companyId) return { ok: false, error: "Company not found" };
+    const created = await createInventoryProduct({
+      ...payload,
+      company_id: active.companyId,
+      created_by: user.id,
+    });
     return { ok: true, data: created };
   } catch (err: unknown) {
     console.error('createInventoryProductAction failed', err);

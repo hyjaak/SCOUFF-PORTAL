@@ -3,7 +3,8 @@ import InvitesClient from "./InvitesClient";
 import { listInvites } from "./actions";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { buildFeatureMap, normalizeRole } from "@/lib/permissions";
+import { buildFeatureMap } from "@/lib/permissions";
+import { normalizeRole, isCEO } from "@/lib/roles";
 import { getProfileRole } from "@/lib/profile";
 
 type Invite = {
@@ -27,11 +28,11 @@ export default async function InvitesPage() {
   if (!user) redirect("/login");
   const profileRole = await getProfileRole(supabase, user.id);
   const role = normalizeRole(profileRole);
-  if (role !== "ceo") {
+  if (!isCEO(role)) {
     const { data } = await supabase
       .from("role_feature_permissions")
       .select("feature, enabled")
-      .eq("role", role)
+      .eq("role", role.toLowerCase())
       .eq("feature", "invites");
     const features = buildFeatureMap(role, data ?? []);
     if (!features.invites) redirect("/dashboard");

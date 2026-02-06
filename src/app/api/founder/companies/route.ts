@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getProfileRole } from "@/lib/profile";
-import { normalizeRole } from "@/lib/permissions";
+import { normalizeRole, isCEO } from "@/lib/roles";
 
 export async function GET() {
   const supabase = await createServerSupabaseClient();
@@ -9,7 +9,7 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const profileRole = await getProfileRole(supabase, user.id);
-  if (normalizeRole(profileRole) !== "ceo") {
+  if (!isCEO(normalizeRole(profileRole))) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

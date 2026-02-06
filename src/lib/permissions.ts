@@ -1,4 +1,4 @@
-export type AppRole = "ceo" | "manager" | "member";
+import type { Role } from "@/lib/roles";
 
 export const FEATURE_KEYS = ["inventory", "auctions", "invites", "settings", "admin", "deals"] as const;
 export type FeatureKey = typeof FEATURE_KEYS[number];
@@ -13,24 +13,19 @@ export const FEATURE_LABELS: Record<FeatureKey, string> = {
   deals: "Deals",
 };
 
-export function normalizeRole(role?: string | null): AppRole {
-  const value = (role || "").toLowerCase();
-  if (value === "super_admin" || value === "ceo" || value === "business_owner") return "ceo";
-  if (value === "admin" || value === "manager") return "manager";
-  return "member";
-}
+export type AppRole = Role;
 
 export function buildFeatureMap(role: AppRole, rows?: Array<{ feature?: string | null; enabled?: boolean | null }>) {
   const base: FeatureMap = {
-    inventory: false,
-    auctions: false,
+    inventory: role === "MEMBER",
+    auctions: role === "MEMBER",
     invites: false,
     settings: false,
     admin: false,
     deals: false,
   };
 
-  if (role === "ceo") {
+  if (role === "CEO") {
     return { ...base, inventory: true, auctions: true, invites: true, settings: true, admin: true, deals: true };
   }
 

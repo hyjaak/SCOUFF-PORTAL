@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { normalizeRole } from '@/lib/permissions';
+import { isCEO, isManager, normalizeRole } from '@/lib/roles';
 
 export default function Sidebar({ role }: { role: string }) {
   const pathname = usePathname();
@@ -11,8 +11,8 @@ export default function Sidebar({ role }: { role: string }) {
   const [open, setOpen] = useState(false);
   const isActive = (href: string) => pathname === href;
 
-  const canSeeManager = normalizedRole === "manager" || normalizedRole === "ceo";
-  const canSeeCeo = normalizedRole === "ceo";
+  const canSeeManager = isManager(normalizedRole) || isCEO(normalizedRole);
+  const canSeeCeo = isCEO(normalizedRole);
   return (
     <>
       <button
@@ -31,24 +31,18 @@ export default function Sidebar({ role }: { role: string }) {
       </div>
       <nav className="flex flex-col gap-4">
         <Link href="/dashboard" className={`hover:text-neon-blue ${isActive("/dashboard") ? "text-neon-blue font-bold" : ""}`}>Dashboard</Link>
-        <Link href="/dashboard/inventory" className={`hover:text-neon-blue ${isActive("/dashboard/inventory") ? "text-neon-blue font-bold" : ""}`}>Products</Link>
+        <Link href="/dashboard/products" className={`hover:text-neon-blue ${isActive("/dashboard/products") ? "text-neon-blue font-bold" : ""}`}>Products</Link>
         <Link href="/dashboard/auctions" className={`hover:text-neon-blue ${isActive("/dashboard/auctions") ? "text-neon-blue font-bold" : ""}`}>Auctions</Link>
         {canSeeManager && (
-          <Link href="/dashboard/invites" className={`hover:text-neon-blue ${isActive("/dashboard/invites") ? "text-neon-blue font-bold" : ""}`}>Team / Members</Link>
+          <Link href="/dashboard/settings" className={`hover:text-neon-blue ${isActive("/dashboard/settings") ? "text-neon-blue font-bold" : ""}`}>Settings</Link>
         )}
         {canSeeManager && (
-          <Link href="/dashboard/orders" className={`hover:text-neon-blue ${isActive("/dashboard/orders") ? "text-neon-blue font-bold" : ""}`}>Orders</Link>
+          <Link href="/dashboard/admin" className={`hover:text-neon-blue ${isActive("/dashboard/admin") ? "text-neon-blue font-bold" : ""}`}>Admin</Link>
         )}
         {canSeeCeo && (
           <Link href="/dashboard/founder" className={`hover:text-neon-blue ${isActive("/dashboard/founder") ? "text-neon-blue font-bold" : ""}`}>
             Founder <span className="ml-2 text-[10px] uppercase tracking-widest bg-blue-800 text-blue-100 px-1.5 py-0.5 rounded">CEO</span>
           </Link>
-        )}
-        {canSeeCeo && (
-          <Link href="/dashboard/admin" className={`hover:text-neon-blue ${isActive("/dashboard/admin") ? "text-neon-blue font-bold" : ""}`}>Admin</Link>
-        )}
-        {canSeeCeo && (
-          <Link href="/dashboard/settings" className={`hover:text-neon-blue ${isActive("/dashboard/settings") ? "text-neon-blue font-bold" : ""}`}>Settings</Link>
         )}
       </nav>
     </aside>

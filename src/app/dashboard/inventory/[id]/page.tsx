@@ -1,7 +1,8 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import React from "react";
-import { buildFeatureMap, normalizeRole } from "@/lib/permissions";
+import { buildFeatureMap } from "@/lib/permissions";
+import { normalizeRole, isCEO } from "@/lib/roles";
 import { getProfileRole } from "@/lib/profile";
 
 export default async function ProductIntelView({ params }: { params: { id: string } }) {
@@ -11,11 +12,11 @@ export default async function ProductIntelView({ params }: { params: { id: strin
   // Get role from profiles
   const profileRole = await getProfileRole(supabase, user.id);
   const role = normalizeRole(profileRole);
-  if (role !== "ceo") {
+  if (!isCEO(role)) {
     const { data } = await supabase
       .from("role_feature_permissions")
       .select("feature, enabled")
-      .eq("role", role)
+      .eq("role", role.toLowerCase())
       .eq("feature", "inventory");
     const features = buildFeatureMap(role, data ?? []);
     if (!features.inventory) redirect("/dashboard");
@@ -37,7 +38,7 @@ export default async function ProductIntelView({ params }: { params: { id: strin
         <div className="text-blue-200 text-xs mt-2">Created: {new Date(product.created_at).toLocaleString()}</div>
         <div className="text-blue-200 text-xs mt-2">Updated: {new Date(product.updated_at).toLocaleString()}</div>
         <div className="text-blue-200 text-sm mt-4">{product.description}</div>
-        {role === "ceo" ? (
+        {isCEO(role) ? (
           <div className="mt-8 p-4 bg-blue-950 border border-blue-700 rounded text-blue-200 font-bold">CEO Controls (edit, delete, etc.) — Placeholder</div>
         ) : (
           <div className="mt-8 p-4 bg-gray-900 border border-gray-700 rounded text-gray-300 font-semibold">Read-only view</div>

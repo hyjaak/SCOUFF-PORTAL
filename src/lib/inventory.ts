@@ -11,6 +11,8 @@ export type InventoryProduct = {
   unit_cost: number | null;
   retail_price: number;
   status: "draft" | "active" | "archived";
+  company_id?: string | null;
+  created_by?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -24,6 +26,8 @@ export type CreateInventoryProductInput = {
   unit_cost?: number;
   retail_price?: number;
   status?: "draft" | "active" | "archived";
+  company_id?: string | null;
+  created_by?: string | null;
 };
 
 export async function getInventoryProducts() {
@@ -49,6 +53,8 @@ export async function createInventoryProduct(input: CreateInventoryProductInput)
     status: "draft" | "active" | "archived";
     unit_cost?: number | null;
     retail_price?: number | null;
+    company_id?: string | null;
+    created_by?: string | null;
   } = {
     sku: input.sku.trim(),
     name: input.name.trim(),
@@ -64,6 +70,13 @@ export async function createInventoryProduct(input: CreateInventoryProductInput)
 
   if (input.retail_price != null) {
     payload.retail_price = Number.isFinite(input.retail_price) ? Number(input.retail_price) : null;
+  }
+
+  if (input.company_id) {
+    payload.company_id = input.company_id;
+  }
+  if (input.created_by) {
+    payload.created_by = input.created_by;
   }
 
   const { data, error } = await supabase

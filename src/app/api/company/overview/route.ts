@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getActiveCompanyId } from "@/lib/company";
 import { getProfileRole } from "@/lib/profile";
-import { normalizeRole } from "@/lib/permissions";
+import { normalizeRole, isCEO } from "@/lib/roles";
 
 export async function GET() {
   const supabase = await createServerSupabaseClient();
@@ -13,7 +13,7 @@ export async function GET() {
   const role = normalizeRole(profileRole);
 
   const active = await getActiveCompanyId(supabase, user.id);
-  if (!active.companyId && role !== "ceo") {
+  if (!active.companyId && !isCEO(role)) {
     return NextResponse.json({ error: "No company" }, { status: 400 });
   }
 

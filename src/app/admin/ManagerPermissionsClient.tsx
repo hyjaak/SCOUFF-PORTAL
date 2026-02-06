@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from "react";
 import { FEATURE_LABELS, FEATURE_KEYS, type FeatureKey } from "@/lib/permissions";
 import { setRoleFeaturePermissionAction, setUserRoleAction } from "./actions";
+import { normalizeRole } from "@/lib/roles";
 
 type ProfileRow = {
   id: string;
@@ -64,7 +65,7 @@ export default function ManagerPermissionsClient({ profiles, permissions }: Prop
     }
   };
 
-  const handleRoleChange = async (userId: string, role: "member" | "manager") => {
+  const handleRoleChange = async (userId: string, role: "MEMBER" | "MANAGER") => {
     setRoleSavingId(userId);
     setError("");
     try {
@@ -89,20 +90,20 @@ export default function ManagerPermissionsClient({ profiles, permissions }: Prop
         ) : (
           rows.map((profile) => {
             const label = profile.email || profile.id;
-            const role = (profile.role || "member").toLowerCase();
-            const isManager = role === "manager";
+            const role = normalizeRole(profile.role);
+            const isManager = role === "MANAGER";
             return (
               <div key={profile.id} className="border border-blue-900 rounded-lg p-4 flex items-center justify-between gap-4 bg-[#0f172a]">
                 <div className="text-blue-200 font-semibold">{label}</div>
                 <div className="flex items-center gap-2">
                   <select
-                    value={isManager ? "manager" : "member"}
-                    onChange={(e) => handleRoleChange(profile.id, e.target.value as "member" | "manager")}
+                    value={isManager ? "MANAGER" : "MEMBER"}
+                    onChange={(e) => handleRoleChange(profile.id, e.target.value as "MEMBER" | "MANAGER")}
                     disabled={roleSavingId === profile.id}
                     className="p-2 rounded bg-[#101a2b] border border-blue-800 text-white"
                   >
-                    <option value="member">Member</option>
-                    <option value="manager">Manager</option>
+                    <option value="MEMBER">Member</option>
+                    <option value="MANAGER">Manager</option>
                   </select>
                   {roleSavingId === profile.id && <span className="text-blue-300 text-sm">Saving...</span>}
                 </div>

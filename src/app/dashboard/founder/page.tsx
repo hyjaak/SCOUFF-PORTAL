@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getProfileRole } from "@/lib/profile";
-import { normalizeRole } from "@/lib/permissions";
+import { normalizeRole, isCEO } from "@/lib/roles";
 import Card from "@/components/Card";
 
 export default async function FounderDashboardPage() {
@@ -10,7 +10,7 @@ export default async function FounderDashboardPage() {
   if (!user) redirect("/login");
 
   const profileRole = await getProfileRole(supabase, user.id);
-  if (normalizeRole(profileRole) !== "ceo") redirect("/dashboard");
+  if (!isCEO(normalizeRole(profileRole))) redirect("/dashboard");
 
   const { data: orders } = await supabase
     .from("orders")

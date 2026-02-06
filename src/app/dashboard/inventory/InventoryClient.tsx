@@ -47,11 +47,12 @@ type Product = {
 
 type Props = {
   initialProducts: Product[];
+  canEdit?: boolean;
 };
 
 type CreateProductResult = { ok: true; data: Product } | { ok: false; error: string };
 
-export default function InventoryClient({ initialProducts }: Props) {
+export default function InventoryClient({ initialProducts, canEdit = true }: Props) {
   const router = useRouter();
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -298,12 +299,14 @@ export default function InventoryClient({ initialProducts }: Props) {
       {/* Top Bar */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-800 bg-gray-950">
         <div />
-        <button
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold shadow"
-          onClick={handleOpenModal}
-        >
-          Add Product
-        </button>
+        {canEdit && (
+          <button
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold shadow"
+            onClick={handleOpenModal}
+          >
+            Add Product
+          </button>
+        )}
       </div>
 
       {success && (
@@ -463,12 +466,14 @@ export default function InventoryClient({ initialProducts }: Props) {
         {inventory.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full">
             <div className="text-lg text-gray-400 mb-4">No inventory yet</div>
-            <button
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold shadow"
-              onClick={handleOpenModal}
-            >
-              Add Product
-            </button>
+            {canEdit && (
+              <button
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold shadow"
+                onClick={handleOpenModal}
+              >
+                Add Product
+              </button>
+            )}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -492,30 +497,34 @@ export default function InventoryClient({ initialProducts }: Props) {
                     <td className="px-4 py-2 text-white">{item.retail_price == null ? "-" : `$${item.retail_price}`}</td>
                     <td className="px-4 py-2 text-white">{item.status}</td>
                     <td className="px-4 py-2">
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => handleOpenEditModal(item)}
-                          className="px-3 py-1 text-sm rounded bg-gray-800 text-gray-200 border border-gray-700 hover:bg-gray-700"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleOpenAdjustModal(item)}
-                          className="px-3 py-1 text-sm rounded bg-gray-800 text-gray-200 border border-gray-700 hover:bg-gray-700"
-                        >
-                          Adjust
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteProduct(item)}
-                          disabled={deleteLoadingId === item.id}
-                          className="px-3 py-1 text-sm rounded bg-red-900/40 text-red-200 border border-red-800 hover:bg-red-900 disabled:opacity-60"
-                        >
-                          {deleteLoadingId === item.id ? "Deleting..." : "Delete"}
-                        </button>
-                      </div>
+                      {canEdit ? (
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenEditModal(item)}
+                            className="px-3 py-1 text-sm rounded bg-gray-800 text-gray-200 border border-gray-700 hover:bg-gray-700"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenAdjustModal(item)}
+                            className="px-3 py-1 text-sm rounded bg-gray-800 text-gray-200 border border-gray-700 hover:bg-gray-700"
+                          >
+                            Adjust
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteProduct(item)}
+                            disabled={deleteLoadingId === item.id}
+                            className="px-3 py-1 text-sm rounded bg-red-900/40 text-red-200 border border-red-800 hover:bg-red-900 disabled:opacity-60"
+                          >
+                            {deleteLoadingId === item.id ? "Deleting..." : "Delete"}
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-gray-400 text-sm">Read-only</span>
+                      )}
                     </td>
                   </tr>
                 ))}

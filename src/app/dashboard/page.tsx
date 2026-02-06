@@ -25,8 +25,8 @@ export default async function DashboardPage() {
   const aov = orderCount > 0 ? Math.round(totalGross / orderCount) : 0;
   return (
     <div className="w-full max-w-5xl">
-      <h1 className="text-3xl font-bold text-sky-400 mb-8">SCOUFF Products Portal</h1>
-      <div className="mb-4 text-sky-300 font-medium text-lg">Welcome to your products dashboard.</div>
+      <h1 className="text-3xl font-bold text-sky-400 mb-2">Dashboard</h1>
+      <p className="mb-6 text-sky-300 font-medium text-lg">Your control center for products, auctions, and company performance.</p>
       <div className="mb-8">
         <h2 className="text-xl font-semibold text-blue-300 mb-3">Company Overview {company?.name ? `— ${company.name}` : ""}</h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

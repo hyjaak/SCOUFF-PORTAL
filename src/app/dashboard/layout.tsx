@@ -8,7 +8,7 @@ import EnvMissing from "@/components/EnvMissing";
 import Sidebar from "@/components/Sidebar";
 import Topbar from "@/components/Topbar";
 import { redirect } from "next/navigation";
-import { normalizeRole } from "@/lib/permissions";
+import { normalizeRole } from "@/lib/roles";
 import { getProfileRole } from "@/lib/profile";
 
 export const dynamic = "force-dynamic";
@@ -79,12 +79,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
   const normalizedRole = normalizeRole(user.role);
   let featureRows: Array<{ feature?: string | null; enabled?: boolean | null }> = [];
-  if (normalizedRole !== "ceo") {
+  if (normalizedRole !== "CEO") {
     try {
       const { data } = await supabase
         .from("role_feature_permissions")
         .select("feature, enabled")
-        .eq("role", normalizedRole);
+        .eq("role", normalizedRole.toLowerCase());
       featureRows = data ?? [];
     } catch {
       featureRows = [];
@@ -96,7 +96,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <Sidebar role={normalizedRole} />
       <div className="flex flex-col flex-1 md:pl-64">
         <Topbar user={{ email: user.email, role: normalizedRole }} />
-        {normalizedRole === "ceo" && (
+        {normalizedRole === "CEO" && (
           <div className="bg-yellow-900 text-yellow-200 px-6 py-3 text-center font-bold">CEO MODE ENABLED</div>
         )}
         <main className="flex-1 flex flex-col items-center p-8">{children}</main>

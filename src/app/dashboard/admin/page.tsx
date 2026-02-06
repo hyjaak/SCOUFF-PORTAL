@@ -1,7 +1,7 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { getProfileRole } from "@/lib/profile";
-import { normalizeRole } from "@/lib/permissions";
+import { normalizeRole, isCEO, isManager } from "@/lib/roles";
 import FormField from "@/components/FormField";
 import ManagerPermissionsClient from "@/app/admin/ManagerPermissionsClient";
 
@@ -12,7 +12,7 @@ export default async function DashboardAdminPage() {
 
   const profileRole = await getProfileRole(supabase, user.id);
   const role = normalizeRole(profileRole);
-  if (role !== "ceo") redirect("/dashboard");
+  if (!isCEO(role) && !isManager(role)) redirect("/dashboard");
 
   const { data: perms } = await supabase
     .from("role_feature_permissions")
@@ -27,7 +27,7 @@ export default async function DashboardAdminPage() {
       email: (row as { email?: string | null }).email ?? null,
       role: (row as { role?: string | null }).role ?? null,
     }))
-    .filter((row) => row.id && normalizeRole(row.role) !== "ceo");
+    .filter((row) => row.id && !isCEO(normalizeRole(row.role)));
 
   return (
     <div className="w-full max-w-3xl">
@@ -40,15 +40,15 @@ export default async function DashboardAdminPage() {
           </FormField>
           <FormField label="Role">
             <select className="p-2 rounded bg-[#101a2b] border border-blue-800 text-white w-full">
-              <option value="member">Member</option>
-              <option value="manager">Manager</option>
-              <option value="ceo">CEO</option>
+              <option value="MEMBER">Member</option>
+              <option value="MANAGER">Manager</option>
+              {isCEO(role) && <option value="CEO">Super Admin</option>}
             </select>
           </FormField>
           <button type="submit" className="bg-blue-700 hover:bg-blue-900 text-white font-semibold py-2 rounded transition">Create Invite</button>
         </form>
       </section>
-      <ManagerPermissionsClient profiles={profiles} permissions={rolePermissions} />
+      {isCEO(role) && <ManagerPermissionsClient profiles={profiles} permissions={rolePermissions} />}
     </div>
   );
 }

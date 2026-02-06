@@ -5,7 +5,8 @@ import Sidebar from '../../components/Sidebar';
 import Topbar from '../../components/Topbar';
 import FormField from '../../components/FormField';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { buildFeatureMap, normalizeRole } from '@/lib/permissions';
+import { buildFeatureMap } from '@/lib/permissions';
+import { normalizeRole, isCEO } from '@/lib/roles';
 import { redirect } from 'next/navigation';
 import { getProfileRole } from '@/lib/profile';
 
@@ -16,16 +17,16 @@ export default async function AdminPage() {
   const profileRole = await getProfileRole(supabase, user.id);
   const normalizedRole = normalizeRole(profileRole);
   let featureRows: Array<{ feature?: string | null; enabled?: boolean | null }> = [];
-  if (normalizedRole !== "ceo") {
+  if (!isCEO(normalizedRole)) {
     const { data } = await supabase
       .from("role_feature_permissions")
       .select("feature, enabled")
-      .eq("role", normalizedRole);
+      .eq("role", normalizedRole.toLowerCase());
     featureRows = data ?? [];
   }
   const currentFeatures = buildFeatureMap(normalizedRole, featureRows);
 
-  if (normalizedRole !== "ceo" && !currentFeatures.admin) {
+  if (!isCEO(normalizedRole) && !currentFeatures.admin) {
     redirect("/dashboard");
   }
 
@@ -45,9 +46,9 @@ export default async function AdminPage() {
               </FormField>
               <FormField label="Role">
                 <select className="p-2 rounded bg-[#101a2b] border border-blue-800 text-white w-full">
-                  <option value="member">Member</option>
-                  <option value="manager">Manager</option>
-                  <option value="ceo">CEO</option>
+                  <option value="MEMBER">Member</option>
+                  <option value="MANAGER">Manager</option>
+                  {isCEO(normalizedRole) && <option value="CEO">Super Admin</option>}
                 </select>
               </FormField>
               <button type="submit" className="bg-blue-700 hover:bg-blue-900 text-white font-semibold py-2 rounded transition">Create Invite</button>
