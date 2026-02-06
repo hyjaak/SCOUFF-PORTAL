@@ -5,7 +5,7 @@ import FormField from '../../../components/FormField';
 
 export default function AuctionDetailPage() {
   // Placeholder user and auction for MVP
-  const user = { email: 'admin@scouff.com', role: 'SUPER_ADMIN' };
+  const user = { email: 'admin@scouff.com', role: 'ceo' };
   const auction = { id: '1', title: 'Rare Artifact', description: 'A unique item.', ends_at: '2026-02-01T12:00:00Z' };
   const bids = [
     { user_id: '1', amount: 100, created_at: '2026-01-28T10:00:00Z' },

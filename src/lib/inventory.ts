@@ -9,7 +9,7 @@ export type InventoryProduct = {
   description: string | null;
   quantity: number;
   unit_cost: number | null;
-  retail_price: number | null;
+  retail_price: number;
   status: "draft" | "active" | "archived";
   created_at: string;
   updated_at: string;

@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { applyInventoryAdjustmentAction, createInventoryProductAction, updateInventoryProductAction } from "./actions";
+import { applyInventoryAdjustmentAction, createInventoryProductAction, deleteInventoryProductAction, updateInventoryProductAction } from "./actions";
 
 function getErrorMessage(err: unknown, fallback: string) {
   if (err instanceof Error) return err.message;
@@ -76,6 +76,8 @@ export default function InventoryClient({ initialProducts }: Props) {
   const [submitLoading, setSubmitLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [adjustLoading, setAdjustLoading] = useState(false);
+  const [deleteLoadingId, setDeleteLoadingId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [inventory, setInventory] = useState<Product[]>(initialProducts || []);
   const [success, setSuccess] = useState("");
@@ -110,6 +112,7 @@ export default function InventoryClient({ initialProducts }: Props) {
       description: "",
     });
     setSubmitError(null);
+    setDeleteError(null);
     setSuccess("");
     setModalOpen(true);
   };
@@ -126,6 +129,7 @@ export default function InventoryClient({ initialProducts }: Props) {
       description: product.description ?? "",
     });
     setSubmitError(null);
+    setDeleteError(null);
     setSuccess("");
     setModalOpen(true);
   };
@@ -144,6 +148,7 @@ export default function InventoryClient({ initialProducts }: Props) {
       note: "",
     });
     setError("");
+    setDeleteError(null);
     setSuccess("");
     setAdjustModalOpen(true);
   };
@@ -152,6 +157,27 @@ export default function InventoryClient({ initialProducts }: Props) {
     setAdjustModalOpen(false);
     setAdjustingProduct(null);
     setError("");
+  };
+
+  const handleDeleteProduct = async (product: Product) => {
+    const confirmed = typeof window !== "undefined" ? window.confirm(`Delete ${product.name}? This cannot be undone.`) : false;
+    if (!confirmed) return;
+
+    setDeleteLoadingId(product.id);
+    setDeleteError(null);
+    setSuccess("");
+    try {
+      const res = await deleteInventoryProductAction(product.id);
+      if (!res.ok) throw new Error(res.error);
+      setInventory((inv) => inv.filter((p) => p.id !== product.id));
+      setSuccess("Product deleted");
+      router.refresh();
+    } catch (err: unknown) {
+      console.error("deleteInventoryProduct failed", err);
+      setDeleteError(getErrorMessage(err, "Failed to delete product"));
+    } finally {
+      setDeleteLoadingId(null);
+    }
   };
 
   const handleAdjustChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -188,6 +214,7 @@ export default function InventoryClient({ initialProducts }: Props) {
       setAdjustingProduct(null);
       setSuccess("Stock adjusted");
     } catch (err: unknown) {
+      console.error("applyInventoryAdjustment failed", err);
       setError(getErrorMessage(err, "Failed to adjust stock"));
     } finally {
       setAdjustLoading(false);
@@ -208,6 +235,9 @@ export default function InventoryClient({ initialProducts }: Props) {
       if (!form.name.trim() || !form.category.trim()) {
         throw new Error("Name and category are required");
       }
+      if (!form.sku.trim()) {
+        throw new Error("SKU is required");
+      }
       if (form.quantity < 0 || form.retail_price < 0) {
         throw new Error("Quantity and price must be non-negative");
       }
@@ -226,10 +256,19 @@ export default function InventoryClient({ initialProducts }: Props) {
         setInventory((inv) => inv.map((p) => (p.id === updated.id ? updated : p)));
         setSuccess("Product updated");
       } else {
-        const res = await withTimeout(
+        let res = await withTimeout(
           createInventoryProductAction(form) as unknown as Promise<CreateProductResult>,
           20000
         );
+        if (!res.ok && /duplicate|unique|sku/i.test(res.error)) {
+          const nextSku = generateSku();
+          const retryForm = { ...form, sku: nextSku };
+          setForm((prev) => ({ ...prev, sku: nextSku }));
+          res = await withTimeout(
+            createInventoryProductAction(retryForm) as unknown as Promise<CreateProductResult>,
+            20000
+          );
+        }
         if (!res.ok) throw new Error(res.error);
         const created = res.data as Product;
         setModalOpen(false);
@@ -242,11 +281,12 @@ export default function InventoryClient({ initialProducts }: Props) {
           status: "draft",
           description: "",
         });
-        setInventory((inv) => [...inv, created]);
+        setInventory((inv) => [created, ...inv]);
         setSuccess("Product added");
         router.refresh();
       }
     } catch (err: unknown) {
+      console.error("createInventoryProduct failed", err);
       setSubmitError(getErrorMessage(err, "Failed to add product"));
     } finally {
       setSubmitLoading(false);
@@ -270,6 +310,13 @@ export default function InventoryClient({ initialProducts }: Props) {
         <div className="px-6 pt-4">
           <div className="bg-green-900/40 border border-green-700 text-green-200 rounded-md px-4 py-2 text-sm">
             {success}
+          </div>
+        </div>
+      )}
+      {deleteError && (
+        <div className="px-6 pt-4">
+          <div className="bg-red-900/40 border border-red-700 text-red-200 rounded-md px-4 py-2 text-sm">
+            {deleteError}
           </div>
         </div>
       )}
@@ -460,7 +507,14 @@ export default function InventoryClient({ initialProducts }: Props) {
                         >
                           Adjust
                         </button>
-                        <button type="button" disabled className="px-3 py-1 text-sm rounded bg-gray-800 text-gray-400 border border-gray-700">Archive</button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteProduct(item)}
+                          disabled={deleteLoadingId === item.id}
+                          className="px-3 py-1 text-sm rounded bg-red-900/40 text-red-200 border border-red-800 hover:bg-red-900 disabled:opacity-60"
+                        >
+                          {deleteLoadingId === item.id ? "Deleting..." : "Delete"}
+                        </button>
                       </div>
                     </td>
                   </tr>

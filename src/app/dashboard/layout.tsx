@@ -8,6 +8,8 @@ import EnvMissing from "@/components/EnvMissing";
 import Sidebar from "@/components/Sidebar";
 import Topbar from "@/components/Topbar";
 import { redirect } from "next/navigation";
+import { buildFeatureMap, normalizeRole } from "@/lib/permissions";
+import { getProfileRole } from "@/lib/profile";
 
 export const dynamic = "force-dynamic";
 
@@ -32,18 +34,12 @@ async function getUserWithRole(supabase: SupabaseServerClient) {
   } catch {
     user = null;
   }
-  if (!user) return { email: "", role: "guest" };
+  if (!user) return { id: "", email: "", role: "guest" };
 
   // Try to fetch profile from public.profiles
-  let profileRole: string | null = null;
-  try {
-    const result = await supabase.from("profiles").select("role").eq("id", user.id).single();
-    const roleValue = (result as unknown as { data?: { role?: unknown } | null }).data?.role;
-    if (typeof roleValue === "string") profileRole = roleValue;
-  } catch {
-    profileRole = null;
-  }
+  const profileRole = await getProfileRole(supabase, user.id);
   return {
+    id: user.id,
     email: user.email || "",
     role: profileRole || "member"
   };
@@ -81,12 +77,26 @@ export default async function DashboardLayout({ children }: { children: React.Re
     redirect("/login");
     return null;
   }
+  const normalizedRole = normalizeRole(user.role);
+  let featureRows: Array<{ feature?: string | null; enabled?: boolean | null }> = [];
+  if (normalizedRole !== "ceo") {
+    try {
+      const { data } = await supabase
+        .from("role_feature_permissions")
+        .select("feature, enabled")
+        .eq("role", normalizedRole);
+      featureRows = data ?? [];
+    } catch {
+      featureRows = [];
+    }
+  }
+  const features = buildFeatureMap(normalizedRole, featureRows);
   return (
     <div className="min-h-screen flex bg-[#0a0e1a]">
-      <Sidebar role={user.role} />
+      <Sidebar role={normalizedRole} features={features} />
       <div className="flex flex-col flex-1">
-        <Topbar user={user} />
-        {user.role === "ceo" && (
+        <Topbar user={{ email: user.email, role: normalizedRole }} />
+        {normalizedRole === "ceo" && (
           <div className="bg-yellow-900 text-yellow-200 px-6 py-3 text-center font-bold">CEO MODE ENABLED</div>
         )}
         <main className="flex-1 flex flex-col items-center p-8">{children}</main>

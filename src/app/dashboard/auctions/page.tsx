@@ -1,4 +1,23 @@
-export default function AuctionsPage() {
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import { buildFeatureMap, normalizeRole } from "@/lib/permissions";
+import { getProfileRole } from "@/lib/profile";
+
+export default async function AuctionsPage() {
+  const supabase = await createServerSupabaseClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+  const profileRole = await getProfileRole(supabase, user.id);
+  const role = normalizeRole(profileRole);
+  if (role !== "ceo") {
+    const { data } = await supabase
+      .from("role_feature_permissions")
+      .select("feature, enabled")
+      .eq("role", role)
+      .eq("feature", "auctions");
+    const features = buildFeatureMap(role, data ?? []);
+    if (!features.auctions) redirect("/dashboard");
+  }
   return (
     <div style={{ width: "100%", maxWidth: 900 }}>
       <h1 style={{ color: "#38bdf8", fontWeight: 700, fontSize: 28, marginBottom: 32 }}>Auctions</h1>

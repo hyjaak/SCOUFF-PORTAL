@@ -1,14 +1,25 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import React from "react";
+import { buildFeatureMap, normalizeRole } from "@/lib/permissions";
+import { getProfileRole } from "@/lib/profile";
 
 export default async function ProductIntelView({ params }: { params: { id: string } }) {
   const supabase = await createServerSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
   // Get role from profiles
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  const role = profile?.role || "member";
+  const profileRole = await getProfileRole(supabase, user.id);
+  const role = normalizeRole(profileRole);
+  if (role !== "ceo") {
+    const { data } = await supabase
+      .from("role_feature_permissions")
+      .select("feature, enabled")
+      .eq("role", role)
+      .eq("feature", "inventory");
+    const features = buildFeatureMap(role, data ?? []);
+    if (!features.inventory) redirect("/dashboard");
+  }
   // Fetch product
   const { data: product, error } = await supabase.from("inventory_products").select("*").eq("id", params.id).single();
   if (!product) return <div className="bg-red-900 text-red-200 px-6 py-3 text-center font-bold mt-8">Product not found</div>;

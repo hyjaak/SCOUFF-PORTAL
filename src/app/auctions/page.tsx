@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import Sidebar from '../../components/Sidebar';
 import Topbar from '../../components/Topbar';
 import SmartBackButton from '@/components/SmartBackButton';
@@ -15,7 +15,9 @@ export default function AuctionsPage() {
       <section className="flex-1 flex flex-col items-center justify-center p-8">
         <div className="w-full max-w-2xl">
           <div className="mb-6">
-            <SmartBackButton />
+            <Suspense fallback={null}>
+              <SmartBackButton />
+            </Suspense>
           </div>
           <div className="bg-[#131c2e] rounded-lg shadow-lg p-6 border border-blue-900 mb-4">
             <div className="text-xl font-semibold text-white mb-2">Rare Artifact</div>

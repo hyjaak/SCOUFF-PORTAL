@@ -35,9 +35,12 @@ export type UpdateInventoryProductInput = {
 
 export async function createInventoryProductAction(input: CreateInventoryProductInput): Promise<ActionResult<InventoryProduct>> {
   // Basic normalization (keep light; RLS/DB constraints are the real guards)
-  const payload: CreateInventoryProductInput = {
-    ...input,
-    sku: input.sku.trim(),
+  const cleanedSku = input.sku?.trim();
+  if (!cleanedSku) {
+    return { ok: false, error: "SKU is required" };
+  }
+  const payload = {
+    sku: cleanedSku,
     name: input.name.trim(),
     category: input.category.trim(),
     description: input.description?.trim() || undefined,
@@ -50,6 +53,7 @@ export async function createInventoryProductAction(input: CreateInventoryProduct
     const created = await createInventoryProduct(payload);
     return { ok: true, data: created };
   } catch (err: unknown) {
+    console.error('createInventoryProductAction failed', err);
     return { ok: false, error: getErrorMessage(err, 'Failed to add product') };
   }
 }
@@ -73,8 +77,28 @@ export async function updateInventoryProductAction(id: string, input: UpdateInve
     .select('*')
     .single();
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    console.error('updateInventoryProductAction failed', error);
+    throw new Error(error.message);
+  }
   return data;
+}
+
+export async function deleteInventoryProductAction(id: string): Promise<ActionResult<{ id: string }>> {
+  const supabase = await createServerSupabaseClient();
+
+  try {
+    const { error } = await supabase
+      .from('inventory_products')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw new Error(error.message);
+    return { ok: true, data: { id } };
+  } catch (err: unknown) {
+    console.error('deleteInventoryProductAction failed', err);
+    return { ok: false, error: getErrorMessage(err, 'Failed to delete product') };
+  }
 }
 
 export type InventoryAdjustmentInput = {

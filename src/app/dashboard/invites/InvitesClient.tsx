@@ -57,7 +57,8 @@ export default function InvitesClient({ invites: initialInvites }: { invites: In
         />
         <select value={role} onChange={e => setRole(e.target.value)} style={{ padding: 12, borderRadius: 8, border: "1px solid #1e3a8a", background: "#101a2b", color: "#fff", fontWeight: 500, fontSize: 16, flex: 1 }}>
           <option value="member">Member</option>
-          <option value="admin">Admin</option>
+          <option value="manager">Manager</option>
+          <option value="ceo">CEO</option>
         </select>
         <button type="submit" disabled={loading} style={{ background: "#38bdf8", color: "#fff", fontWeight: 700, border: "none", borderRadius: 8, padding: "12px 32px", fontSize: 18 }}>
           {loading ? "Creating..." : "Create Invite"}

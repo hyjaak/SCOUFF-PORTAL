@@ -1,6 +1,10 @@
 
 import InvitesClient from "./InvitesClient";
 import { listInvites } from "./actions";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import { buildFeatureMap, normalizeRole } from "@/lib/permissions";
+import { getProfileRole } from "@/lib/profile";
 
 type Invite = {
   email: string;
@@ -18,6 +22,20 @@ function getErrorMessage(err: unknown, fallback: string) {
 }
 
 export default async function InvitesPage() {
+  const supabase = await createServerSupabaseClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+  const profileRole = await getProfileRole(supabase, user.id);
+  const role = normalizeRole(profileRole);
+  if (role !== "ceo") {
+    const { data } = await supabase
+      .from("role_feature_permissions")
+      .select("feature, enabled")
+      .eq("role", role)
+      .eq("feature", "invites");
+    const features = buildFeatureMap(role, data ?? []);
+    if (!features.invites) redirect("/dashboard");
+  }
   let invites: Invite[] = [];
   let error = "";
   try {

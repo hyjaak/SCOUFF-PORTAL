@@ -6,7 +6,7 @@ import Topbar from '../../components/Topbar';
 
 export default function SettingsPage() {
   // Placeholder user for MVP
-  const user = { email: 'admin@scouff.com', role: 'SUPER_ADMIN' };
+  const user = { email: 'admin@scouff.com', role: 'ceo' };
   return (
     <div className="flex min-h-screen">
       <Sidebar role={user.role} />
