@@ -41,6 +41,9 @@ export default async function SettingsPage() {
   return (
     <div style={{ width: "100%", maxWidth: 900 }}>
       <h1 style={{ color: "#38bdf8", fontWeight: 700, fontSize: 28, marginBottom: 32 }}>Settings</h1>
+      <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e3a8a", padding: 16, color: "#93c5fd", fontWeight: 600, marginBottom: 24 }}>
+        Founder share is automatically reserved on every payment.
+      </div>
       {role === "ceo" && (
         <ManagerPermissionsClient profiles={profiles} permissions={rolePermissions} />
       )}

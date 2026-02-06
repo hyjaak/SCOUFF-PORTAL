@@ -1,6 +1,8 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import TrackPageView from '@/components/TrackPageView';
+import { Suspense } from 'react';
 import { assertContracts } from '../lib/contracts';
 
 if (process.env.NODE_ENV !== 'production') {
@@ -18,6 +20,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className="bg-[#0a0e1a] text-white">
       <body className={`${inter.className} min-h-screen bg-gradient-to-br from-[#0a0e1a] to-[#101a2b]`}>
+        <Suspense fallback={null}>
+          <TrackPageView />
+        </Suspense>
         {children}
       </body>
     </html>

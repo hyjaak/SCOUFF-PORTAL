@@ -27,6 +27,9 @@ export default function Sidebar({ role, features }: { role: string; features?: F
         {canSee("settings") && (
           <Link href="/settings?from=dashboard" className="hover:text-neon-blue">Settings</Link>
         )}
+        {normalizedRole === "ceo" && (
+          <Link href="/dashboard/founder" className="hover:text-neon-blue">Founder</Link>
+        )}
       </nav>
     </aside>
   );
