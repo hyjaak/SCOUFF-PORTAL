@@ -47,7 +47,7 @@ export default async function AdminPage() {
                 <select className="p-2 rounded bg-[#101a2b] border border-blue-800 text-white w-full">
                   <option value="member">Member</option>
                   <option value="manager">Manager</option>
-                  <option value="ceo">CEO</option>
+                  <option value="super_admin">Super Admin</option>
                 </select>
               </FormField>
               <button type="submit" className="bg-blue-700 hover:bg-blue-900 text-white font-semibold py-2 rounded transition">Create Invite</button>
