@@ -1,36 +1,57 @@
-import React from 'react';
-import Link from 'next/link';
-import { type FeatureMap, normalizeRole } from '@/lib/permissions';
+ "use client";
 
-export default function Sidebar({ role, features }: { role: string; features?: FeatureMap }) {
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { normalizeRole } from '@/lib/permissions';
+
+export default function Sidebar({ role }: { role: string }) {
+  const pathname = usePathname();
   const normalizedRole = normalizeRole(role);
-  const canSee = (featureKey: keyof FeatureMap) => {
-    if (normalizedRole === "ceo") return true;
-    return Boolean(features?.[featureKey]);
-  };
+  const [open, setOpen] = useState(false);
+  const isActive = (href: string) => pathname === href;
+
+  const canSeeManager = normalizedRole === "manager" || normalizedRole === "ceo";
+  const canSeeCeo = normalizedRole === "ceo";
   return (
-    <aside className="w-64 h-full bg-[#101a2b] border-r border-blue-900 flex flex-col p-6">
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        className="md:hidden fixed top-4 left-4 z-50 px-3 py-2 rounded bg-[#101a2b] border border-blue-900 text-blue-200"
+        aria-label="Toggle navigation"
+      >
+        {open ? "Close" : "Menu"}
+      </button>
+      <aside
+        className={`fixed left-0 top-0 z-40 h-screen w-64 bg-[#101a2b] border-r border-blue-900 flex flex-col p-6 transform transition-transform md:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full"} md:flex`}
+      >
       <div className="mb-8">
         <span className="text-2xl font-bold text-neon-blue">SCOUFF</span>
       </div>
       <nav className="flex flex-col gap-4">
-        {canSee("inventory") && (
-          <Link href="/dashboard/inventory" className="hover:text-neon-blue font-bold">Inventory</Link>
+        <Link href="/dashboard" className={`hover:text-neon-blue ${isActive("/dashboard") ? "text-neon-blue font-bold" : ""}`}>Dashboard</Link>
+        <Link href="/dashboard/inventory" className={`hover:text-neon-blue ${isActive("/dashboard/inventory") ? "text-neon-blue font-bold" : ""}`}>Products</Link>
+        <Link href="/dashboard/auctions" className={`hover:text-neon-blue ${isActive("/dashboard/auctions") ? "text-neon-blue font-bold" : ""}`}>Auctions</Link>
+        {canSeeManager && (
+          <Link href="/dashboard/invites" className={`hover:text-neon-blue ${isActive("/dashboard/invites") ? "text-neon-blue font-bold" : ""}`}>Team / Members</Link>
         )}
-        <Link href="/dashboard" className="hover:text-neon-blue">Dashboard</Link>
-        {canSee("auctions") && (
-          <Link href="/auctions?from=dashboard" className="hover:text-neon-blue">Auctions</Link>
+        {canSeeManager && (
+          <Link href="/dashboard/orders" className={`hover:text-neon-blue ${isActive("/dashboard/orders") ? "text-neon-blue font-bold" : ""}`}>Orders</Link>
         )}
-        {canSee("admin") && (
-          <Link href="/admin" className="hover:text-neon-blue">Admin</Link>
+        {canSeeCeo && (
+          <Link href="/dashboard/founder" className={`hover:text-neon-blue ${isActive("/dashboard/founder") ? "text-neon-blue font-bold" : ""}`}>
+            Founder <span className="ml-2 text-[10px] uppercase tracking-widest bg-blue-800 text-blue-100 px-1.5 py-0.5 rounded">CEO</span>
+          </Link>
         )}
-        {canSee("settings") && (
-          <Link href="/settings?from=dashboard" className="hover:text-neon-blue">Settings</Link>
+        {canSeeCeo && (
+          <Link href="/dashboard/admin" className={`hover:text-neon-blue ${isActive("/dashboard/admin") ? "text-neon-blue font-bold" : ""}`}>Admin</Link>
         )}
-        {normalizedRole === "ceo" && (
-          <Link href="/dashboard/founder" className="hover:text-neon-blue">Founder</Link>
+        {canSeeCeo && (
+          <Link href="/dashboard/settings" className={`hover:text-neon-blue ${isActive("/dashboard/settings") ? "text-neon-blue font-bold" : ""}`}>Settings</Link>
         )}
       </nav>
     </aside>
+    </>
   );
 }

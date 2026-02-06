@@ -8,7 +8,7 @@ import EnvMissing from "@/components/EnvMissing";
 import Sidebar from "@/components/Sidebar";
 import Topbar from "@/components/Topbar";
 import { redirect } from "next/navigation";
-import { buildFeatureMap, normalizeRole } from "@/lib/permissions";
+import { normalizeRole } from "@/lib/permissions";
 import { getProfileRole } from "@/lib/profile";
 
 export const dynamic = "force-dynamic";
@@ -49,9 +49,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const envOk = hasPublicSupabaseEnv();
   if (!envOk) {
     return (
-      <div className="min-h-screen flex bg-[#0a0e1a]">
+      <div className="min-h-screen bg-[#0a0e1a]">
         <Sidebar role="guest" />
-        <div className="flex flex-col flex-1">
+        <div className="flex flex-col flex-1 md:pl-64">
           <Topbar user={{ email: "", role: "guest" }} />
           <EnvMissing />
           <main className="flex-1 flex flex-col items-center p-8">{children}</main>
@@ -62,9 +62,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const supabase = await safe(() => createServerSupabaseClient(), null);
   if (!supabase) {
     return (
-      <div className="min-h-screen flex bg-[#0a0e1a]">
+      <div className="min-h-screen bg-[#0a0e1a]">
         <Sidebar role="guest" />
-        <div className="flex flex-col flex-1">
+        <div className="flex flex-col flex-1 md:pl-64">
           <Topbar user={{ email: "", role: "guest" }} />
           <div className="bg-red-900 text-red-200 px-6 py-3 text-center font-bold">Supabase client unavailable.</div>
           <main className="flex-1 flex flex-col items-center p-8">{children}</main>
@@ -90,11 +90,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
       featureRows = [];
     }
   }
-  const features = buildFeatureMap(normalizedRole, featureRows);
+  void featureRows;
   return (
-    <div className="min-h-screen flex bg-[#0a0e1a]">
-      <Sidebar role={normalizedRole} features={features} />
-      <div className="flex flex-col flex-1">
+    <div className="min-h-screen bg-[#0a0e1a]">
+      <Sidebar role={normalizedRole} />
+      <div className="flex flex-col flex-1 md:pl-64">
         <Topbar user={{ email: user.email, role: normalizedRole }} />
         {normalizedRole === "ceo" && (
           <div className="bg-yellow-900 text-yellow-200 px-6 py-3 text-center font-bold">CEO MODE ENABLED</div>

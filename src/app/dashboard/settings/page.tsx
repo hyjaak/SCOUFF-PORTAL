@@ -10,6 +10,31 @@ export default async function SettingsPage() {
   if (!user) redirect("/login");
   const profileRole = await getProfileRole(supabase, user.id);
   const role = normalizeRole(profileRole);
+  let founderShareBps = 0;
+  let companyName = "";
+  if (role === "ceo") {
+    const { data: rule } = await supabase
+      .from("founder_share_rules")
+      .select("share_bps")
+      .eq("company_id", null)
+      .eq("enabled", true)
+      .single();
+    founderShareBps = rule?.share_bps ?? 0;
+  }
+  const { data: memberRow } = await supabase
+    .from("company_members")
+    .select("company_id")
+    .eq("user_id", user.id)
+    .limit(1)
+    .single();
+  if (memberRow?.company_id) {
+    const { data: company } = await supabase
+      .from("companies")
+      .select("name")
+      .eq("id", memberRow.company_id)
+      .single();
+    companyName = company?.name ?? "";
+  }
   if (role !== "ceo") {
     const { data } = await supabase
       .from("role_feature_permissions")
@@ -43,6 +68,14 @@ export default async function SettingsPage() {
       <h1 style={{ color: "#38bdf8", fontWeight: 700, fontSize: 28, marginBottom: 32 }}>Settings</h1>
       <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e3a8a", padding: 16, color: "#93c5fd", fontWeight: 600, marginBottom: 24 }}>
         Founder share is automatically reserved on every payment.
+      </div>
+      {role === "ceo" && (
+        <div style={{ background: "#131c2e", borderRadius: 12, border: "1px solid #1e3a8a", padding: 20, color: "#fff", fontWeight: 600, marginBottom: 24 }}>
+          Founder share percentage (read-only): {(founderShareBps / 100).toFixed(2)}%
+        </div>
+      )}
+      <div style={{ background: "#131c2e", borderRadius: 12, border: "1px solid #1e3a8a", padding: 20, color: "#fff", fontWeight: 600, marginBottom: 24 }}>
+        Company settings: {companyName || "Unassigned"}
       </div>
       {role === "ceo" && (
         <ManagerPermissionsClient profiles={profiles} permissions={rolePermissions} />

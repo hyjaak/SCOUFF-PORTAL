@@ -32,7 +32,7 @@ export default async function AdminPage() {
   const displayUser = { email: user.email ?? "", role: normalizedRole };
   return (
     <div className="flex min-h-screen">
-      <Sidebar role={displayUser.role} features={currentFeatures} />
+      <Sidebar role={displayUser.role} />
       <div className="flex-1 flex flex-col">
         <Topbar user={displayUser} />
         <main className="flex-1 p-8 bg-[#0a0e1a] max-w-2xl mx-auto">
