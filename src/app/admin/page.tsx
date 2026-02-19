@@ -4,6 +4,7 @@ import React from 'react';
 import Sidebar from '../../components/Sidebar';
 import Topbar from '../../components/Topbar';
 import FormField from '../../components/FormField';
+import InvitesClient from '@/app/dashboard/invites/InvitesClient';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { buildFeatureMap } from '@/lib/permissions';
 import { normalizeRole, isCEO } from '@/lib/roles';
@@ -39,20 +40,9 @@ export default async function AdminPage() {
         <main className="flex-1 p-8 bg-[#0a0e1a] max-w-2xl mx-auto">
           <h1 className="text-3xl font-bold text-neon-blue mb-6">Admin Panel</h1>
           <section className="mb-12">
-            <h2 className="text-xl font-semibold text-blue-300 mb-2">Create Invite</h2>
-            <form className="bg-[#131c2e] p-6 rounded-lg border border-blue-900 flex flex-col gap-4">
-              <FormField label="Email">
-                <input type="email" className="p-2 rounded bg-[#101a2b] border border-blue-800 text-white w-full" required />
-              </FormField>
-              <FormField label="Role">
-                <select className="p-2 rounded bg-[#101a2b] border border-blue-800 text-white w-full">
-                  <option value="MEMBER">Member</option>
-                  <option value="MANAGER">Manager</option>
-                  {isCEO(normalizedRole) && <option value="CEO">Super Admin</option>}
-                </select>
-              </FormField>
-              <button type="submit" className="bg-blue-700 hover:bg-blue-900 text-white font-semibold py-2 rounded transition">Create Invite</button>
-            </form>
+            <h2 className="text-xl font-semibold text-blue-300 mb-2">Invites</h2>
+            {/* Client component handles invite creation and listing */}
+            <InvitesClient invites={(await (async () => { const { data } = await supabase.from('invites').select('*').order('created_at', { ascending: false }).limit(200); return data ?? []; })())} />
           </section>
           <section>
             <h2 className="text-xl font-semibold text-blue-300 mb-2">Create Auction</h2>

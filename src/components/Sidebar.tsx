@@ -11,7 +11,7 @@ export default function Sidebar({ role }: { role: string }) {
   const [open, setOpen] = useState(false);
   const isActive = (href: string) => pathname === href;
 
-  const canSeeManager = isManager(normalizedRole) || isCEO(normalizedRole);
+  const canSeeManager = isManager(normalizedRole);
   const canSeeCeo = isCEO(normalizedRole);
   return (
     <>
@@ -36,7 +36,8 @@ export default function Sidebar({ role }: { role: string }) {
         {canSeeManager && (
           <Link href="/dashboard/settings" className={`hover:text-neon-blue ${isActive("/dashboard/settings") ? "text-neon-blue font-bold" : ""}`}>Settings</Link>
         )}
-        {canSeeManager && (
+        <Link href="/dashboard/orders" className={`hover:text-neon-blue ${isActive("/dashboard/orders") ? "text-neon-blue font-bold" : ""}`}>Orders</Link>
+        {canSeeCeo && (
           <Link href="/dashboard/admin" className={`hover:text-neon-blue ${isActive("/dashboard/admin") ? "text-neon-blue font-bold" : ""}`}>Admin</Link>
         )}
         {canSeeCeo && (

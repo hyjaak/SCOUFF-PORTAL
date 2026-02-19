@@ -1,27 +1,31 @@
-export type Role = "MEMBER" | "MANAGER" | "CEO";
+export type AppRole = 'CEO' | 'MANAGER' | 'MEMBER';
 
-export function normalizeRole(input?: string | null): Role {
-  const value = (input || "").toUpperCase();
-  if (value === "SUPER_ADMIN" || value === "CEO") return "CEO";
-  if (value === "BUSINESS_OWNER" || value === "OWNER" || value === "ADMIN" || value === "MANAGER") return "MANAGER";
-  return "MEMBER";
+export function normalizeRole(input?: string | null): AppRole {
+  if (!input) return 'MEMBER';
+  const s = String(input).trim().toLowerCase();
+  if (s === 'super_admin' || s === 'super admin' || s === 'superadmin' || s === 'ceo') return 'CEO';
+  if (s === 'business_owner' || s === 'business owner' || s === 'business-owner' || s === 'manager') return 'MANAGER';
+  if (s === 'member' || s === 'member') return 'MEMBER';
+  return 'MEMBER';
 }
 
-export function isCEO(input?: string | null): boolean {
-  return normalizeRole(input) === "CEO";
+export function isCEO(input?: string | AppRole | null): boolean {
+  return normalizeRole(input as string) === 'CEO';
 }
 
-export function isManager(input?: string | null): boolean {
-  return normalizeRole(input) === "MANAGER";
+export function isManager(input?: string | AppRole | null): boolean {
+  return normalizeRole(input as string) === 'MANAGER';
 }
 
-export function isMember(input?: string | null): boolean {
-  return normalizeRole(input) === "MEMBER";
+export function roleLabel(role: AppRole | string | null | undefined): string {
+  return normalizeRole(role as string);
 }
 
-export function roleLabel(input?: string | null): string {
-  const role = normalizeRole(input);
-  if (role === "CEO") return "CEO";
-  if (role === "MANAGER") return "MANAGER";
-  return "MEMBER";
+export function toDbRole(role: string): string {
+  const r = normalizeRole(role as string);
+  if (r === 'CEO') return 'super_admin';
+  if (r === 'MANAGER') return 'manager';
+  return 'member';
 }
+
+export default {} as const;

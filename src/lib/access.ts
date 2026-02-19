@@ -1,4 +1,4 @@
-import { normalizeRole, type Role } from "@/lib/roles";
+import { normalizeRole, type AppRole as Role } from "@/lib/roles";
 
 const MEMBER_ALLOWED = new Set<string>([
   "/dashboard",

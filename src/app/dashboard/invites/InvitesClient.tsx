@@ -29,8 +29,18 @@ export default function InvitesClient({ invites: initialInvites }: { invites: In
     setError("");
     setLoading(true);
     try {
-      // TODO: call an API route or server action to create invite
-      setInvites([{ email: inviteEmail, role, created_at: new Date().toISOString() }, ...invites]);
+      const mapRole = (r: string) => {
+        if (!r) return 'member';
+        if (r.toLowerCase() === 'member') return 'member';
+        if (r.toLowerCase() === 'manager' || r.toLowerCase() === 'business_owner') return 'manager';
+        return r.toLowerCase() === 'ceo' ? 'super_admin' : r.toLowerCase();
+      };
+      const payload = { email: inviteEmail, role: mapRole(role) };
+      const res = await fetch('/api/invites', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || 'Create failed');
+      const created = (json.data && json.data[0]) || { email: inviteEmail, role: payload.role, created_at: new Date().toISOString() };
+      setInvites([created, ...invites]);
       setInviteEmail("");
       setRole("MEMBER");
     } catch (err: unknown) {
@@ -59,7 +69,7 @@ export default function InvitesClient({ invites: initialInvites }: { invites: In
         <select value={role} onChange={e => setRole(e.target.value)} style={{ padding: 12, borderRadius: 8, border: "1px solid #1e3a8a", background: "#101a2b", color: "#fff", fontWeight: 500, fontSize: 16, flex: 1 }}>
           <option value="MEMBER">Member</option>
           <option value="MANAGER">Manager</option>
-          <option value="CEO">Super Admin</option>
+          <option value="CEO">CEO</option>
         </select>
         <button type="submit" disabled={loading} style={{ background: "#38bdf8", color: "#fff", fontWeight: 700, border: "none", borderRadius: 8, padding: "12px 32px", fontSize: 18 }}>
           {loading ? "Creating..." : "Create Invite"}

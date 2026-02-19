@@ -1,4 +1,4 @@
-import type { Role } from "@/lib/roles";
+import type { AppRole } from "@/lib/roles";
 
 export const FEATURE_KEYS = ["inventory", "auctions", "invites", "settings", "admin", "deals"] as const;
 export type FeatureKey = typeof FEATURE_KEYS[number];
@@ -13,12 +13,12 @@ export const FEATURE_LABELS: Record<FeatureKey, string> = {
   deals: "Deals",
 };
 
-export type AppRole = Role;
+export type AppRoleType = AppRole;
 
 export function buildFeatureMap(role: AppRole, rows?: Array<{ feature?: string | null; enabled?: boolean | null }>) {
   const base: FeatureMap = {
-    inventory: role === "MEMBER",
-    auctions: role === "MEMBER",
+    inventory: false,
+    auctions: false,
     invites: false,
     settings: false,
     admin: false,
