@@ -21,7 +21,7 @@ export function isMember(input?: string | null): boolean {
 
 export function roleLabel(input?: string | null): string {
   const role = normalizeRole(input);
-  if (role === "CEO") return "SUPER_ADMIN";
+  if (role === "CEO") return "CEO";
   if (role === "MANAGER") return "MANAGER";
   return "MEMBER";
 }
