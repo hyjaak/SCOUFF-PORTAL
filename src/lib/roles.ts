@@ -2,10 +2,11 @@ export type AppRole = 'CEO' | 'MANAGER' | 'MEMBER';
 
 export function normalizeRole(input?: string | null): AppRole {
   if (!input) return 'MEMBER';
-  const s = String(input).trim().toLowerCase();
-  if (s === 'super_admin' || s === 'super admin' || s === 'superadmin' || s === 'ceo') return 'CEO';
-  if (s === 'business_owner' || s === 'business owner' || s === 'business-owner' || s === 'manager') return 'MANAGER';
-  if (s === 'member' || s === 'member') return 'MEMBER';
+  // normalize common variants and strip punctuation
+  const cleaned = String(input).trim().toLowerCase().replace(/[^a-z0-9_ ]+/g, '').replace(/\s+/g, '_');
+  if (cleaned === 'super_admin' || cleaned === 'super admin' || cleaned === 'superadmin' || cleaned === 'ceo') return 'CEO';
+  if (cleaned === 'business_owner' || cleaned === 'business owner' || cleaned === 'business-owner' || cleaned === 'manager' || cleaned === 'business_owner') return 'MANAGER';
+  if (cleaned === 'member' || cleaned === 'member') return 'MEMBER';
   return 'MEMBER';
 }
 

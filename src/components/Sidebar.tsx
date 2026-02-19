@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { isCEO, isManager, normalizeRole } from '@/lib/roles';
+import NAV_ITEMS from '@/lib/nav';
 
 export default function Sidebar({ role }: { role: string }) {
   const pathname = usePathname();
@@ -30,21 +31,13 @@ export default function Sidebar({ role }: { role: string }) {
         <span className="text-2xl font-bold text-neon-blue">SCOUFF</span>
       </div>
       <nav className="flex flex-col gap-4">
-        <Link href="/dashboard" className={`hover:text-neon-blue ${isActive("/dashboard") ? "text-neon-blue font-bold" : ""}`}>Dashboard</Link>
-        <Link href="/dashboard/products" className={`hover:text-neon-blue ${isActive("/dashboard/products") ? "text-neon-blue font-bold" : ""}`}>Products</Link>
-        <Link href="/dashboard/auctions" className={`hover:text-neon-blue ${isActive("/dashboard/auctions") ? "text-neon-blue font-bold" : ""}`}>Auctions</Link>
-        {canSeeManager && (
-          <Link href="/dashboard/settings" className={`hover:text-neon-blue ${isActive("/dashboard/settings") ? "text-neon-blue font-bold" : ""}`}>Settings</Link>
-        )}
-        <Link href="/dashboard/orders" className={`hover:text-neon-blue ${isActive("/dashboard/orders") ? "text-neon-blue font-bold" : ""}`}>Orders</Link>
-        {canSeeCeo && (
-          <Link href="/dashboard/admin" className={`hover:text-neon-blue ${isActive("/dashboard/admin") ? "text-neon-blue font-bold" : ""}`}>Admin</Link>
-        )}
-        {canSeeCeo && (
-          <Link href="/dashboard/founder" className={`hover:text-neon-blue ${isActive("/dashboard/founder") ? "text-neon-blue font-bold" : ""}`}>
-            Founder <span className="ml-2 text-[10px] uppercase tracking-widest bg-blue-800 text-blue-100 px-1.5 py-0.5 rounded">CEO</span>
-          </Link>
-        )}
+        {NAV_ITEMS.map((item) => {
+          const allowed = item.rolesAllowed.includes(normalizedRole);
+          if (!allowed) return null;
+          return (
+            <Link key={item.href} href={item.href} className={`hover:text-neon-blue ${isActive(item.href) ? "text-neon-blue font-bold" : ""}`}>{item.label}</Link>
+          );
+        })}
       </nav>
     </aside>
     </>

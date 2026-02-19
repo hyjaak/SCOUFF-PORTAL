@@ -10,6 +10,7 @@
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "dev:clean": "rimraf .next && next dev --webpack"
+    ,"db:apply":"node scripts/apply-supabase-sql.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.8.0",

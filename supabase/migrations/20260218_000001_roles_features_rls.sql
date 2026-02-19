@@ -1,9 +1,8 @@
--- Manual apply SQL: RBAC functions, role_features, RLS policies, and core tables
--- This file is a convenience fallback if the supabase CLI isn't available.
-
+-- Migration: Roles & RLS (merged from manual_apply_roles_rls.sql)
 begin;
 
--- Companies
+-- (Entire contents copied from manual_apply_roles_rls.sql)
+
 create table if not exists public.companies (
   id uuid primary key default gen_random_uuid(),
   name text not null,
@@ -11,7 +10,6 @@ create table if not exists public.companies (
   created_by uuid null
 );
 
--- Memberships
 create table if not exists public.company_memberships (
   company_id uuid not null references public.companies(id) on delete cascade,
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -20,7 +18,6 @@ create table if not exists public.company_memberships (
   primary key (company_id, user_id)
 );
 
--- Invites
 create table if not exists public.invites (
   id uuid primary key default gen_random_uuid(),
   company_id uuid not null references public.companies(id) on delete cascade,
@@ -32,7 +29,6 @@ create table if not exists public.invites (
 create unique index if not exists invites_company_email_unique
   on public.invites(company_id, lower(email));
 
--- Feature toggles per company for role=manager (CEO always has all features)
 create table if not exists public.role_features (
   company_id uuid not null references public.companies(id) on delete cascade,
   role text not null,
@@ -43,16 +39,14 @@ create table if not exists public.role_features (
   primary key (company_id, role, feature)
 );
 
--- Platform settings (founder share stored now, payments later)
 create table if not exists public.platform_settings (
   id int primary key default 1,
-  founder_share_bps int not null default 500, -- 5.00% basis points
+  founder_share_bps int not null default 500,
   updated_at timestamptz not null default now()
 );
 insert into public.platform_settings(id) values (1)
 on conflict (id) do nothing;
 
--- Inventory products
 create table if not exists public.inventory_products (
   id uuid primary key default gen_random_uuid(),
   company_id uuid not null references public.companies(id) on delete cascade,
@@ -69,7 +63,6 @@ create table if not exists public.inventory_products (
 create index if not exists inventory_products_company_id_idx on public.inventory_products(company_id);
 create unique index if not exists inventory_products_company_sku_unique on public.inventory_products(company_id, sku);
 
--- Auctions
 create table if not exists public.auctions (
   id uuid primary key default gen_random_uuid(),
   company_id uuid not null references public.companies(id) on delete cascade,
@@ -83,7 +76,6 @@ create table if not exists public.auctions (
 );
 create index if not exists auctions_company_id_idx on public.auctions(company_id);
 
--- RBAC functions
 create or replace function public.current_role(p_company_id uuid)
 returns text
 language sql
@@ -135,7 +127,6 @@ as $$
     end;
 $$;
 
--- Enable RLS
 alter table public.companies enable row level security;
 alter table public.company_memberships enable row level security;
 alter table public.invites enable row level security;
@@ -144,7 +135,6 @@ alter table public.inventory_products enable row level security;
 alter table public.auctions enable row level security;
 alter table public.platform_settings enable row level security;
 
--- Companies policies
 drop policy if exists "companies_select" on public.companies;
 create policy "companies_select" on public.companies
 for select to authenticated
@@ -164,7 +154,6 @@ for update to authenticated
 using (public.is_ceo(companies.id))
 with check (public.is_ceo(companies.id));
 
--- Memberships policies
 drop policy if exists "memberships_select" on public.company_memberships;
 create policy "memberships_select" on public.company_memberships
 for select to authenticated
@@ -179,21 +168,18 @@ for all to authenticated
 using (public.is_ceo(company_memberships.company_id))
 with check (public.is_ceo(company_memberships.company_id));
 
--- Invites CEO only
 drop policy if exists "invites_manage_ceo" on public.invites;
 create policy "invites_manage_ceo" on public.invites
 for all to authenticated
 using (public.is_ceo(invites.company_id))
 with check (public.is_ceo(invites.company_id));
 
--- Role features CEO only
 drop policy if exists "role_features_manage_ceo" on public.role_features;
 create policy "role_features_manage_ceo" on public.role_features
 for all to authenticated
 using (public.is_ceo(role_features.company_id))
 with check (public.is_ceo(role_features.company_id));
 
--- Platform settings read-only for now
 drop policy if exists "platform_settings_read" on public.platform_settings;
 create policy "platform_settings_read" on public.platform_settings
 for select to authenticated
@@ -205,7 +191,6 @@ for update to authenticated
 using (false)
 with check (false);
 
--- Inventory policies (feature gated; CEO always passes via has_feature)
 drop policy if exists "inventory_select" on public.inventory_products;
 create policy "inventory_select" on public.inventory_products
 for select to authenticated
@@ -257,7 +242,6 @@ using (
   and public.has_feature(inventory_products.company_id, 'inventory')
 );
 
--- Auctions policies
 drop policy if exists "auctions_select" on public.auctions;
 create policy "auctions_select" on public.auctions
 for select to authenticated
@@ -282,7 +266,6 @@ with check (
 
 commit;
 
--- Grants
 grant usage on schema public to anon, authenticated;
 
 grant select, insert, update, delete on public.inventory_products to authenticated;
