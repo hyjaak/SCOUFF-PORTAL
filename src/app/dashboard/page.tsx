@@ -17,7 +17,7 @@ export default async function DashboardPage() {
 
   const { data: orders } = companyId
     ? await supabase.from("orders").select("gross_amount_cents, net_amount_cents").eq("company_id", companyId)
-    : await supabase.from("orders").select("gross_amount_cents, net_amount_cents");
+    : { data: [] };
 
   const totalGross = (orders ?? []).reduce((sum, row) => sum + (row.gross_amount_cents || 0), 0);
   const totalNet = (orders ?? []).reduce((sum, row) => sum + (row.net_amount_cents || 0), 0);
