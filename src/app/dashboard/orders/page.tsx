@@ -1,7 +1,8 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { getProfileRole } from "@/lib/profile";
-import { normalizeRole, isCEO, isManager } from "@/lib/roles";
+import { normalizeRole } from "@/lib/roles";
+import { canAccess } from "@/lib/access";
 
 export default async function OrdersPage() {
   const supabase = await createServerSupabaseClient();
@@ -10,7 +11,7 @@ export default async function OrdersPage() {
 
   const profileRole = await getProfileRole(supabase, user.id);
   const role = normalizeRole(profileRole);
-  if (!isCEO(role) && !isManager(role)) redirect("/dashboard");
+  if (!canAccess(role, "/dashboard/orders")) redirect("/dashboard");
 
   return (
     <div style={{ width: "100%", maxWidth: 900 }}>

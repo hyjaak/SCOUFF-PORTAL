@@ -4,6 +4,7 @@ const MEMBER_ALLOWED = new Set<string>([
   "/dashboard",
   "/dashboard/products",
   "/dashboard/auctions",
+  "/dashboard/orders",
 ]);
 
 const MANAGER_ALLOWED = new Set<string>([
